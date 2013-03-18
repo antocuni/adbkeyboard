@@ -41,8 +41,13 @@ class AndroidKeyboardEdit(QLineEdit):
     def _handle_key_event(self, event):
         keycode = KEYCODE_MAP.get(event.key(), None)
         if keycode is None:
-            print 'Unknown key: ', qt_key_name(event.key())
-            return
+            if 33 <= event.key() <= 255:
+                # try with type
+                self.monkey.send('type %s' % chr(event.key()))
+                return
+            else:
+                print 'Unknown key: ', qt_key_name(event.key())
+                return
         #
         if event.type() == QEvent.KeyPress:
             action = 'down'
@@ -63,16 +68,20 @@ import telnetlib
 class Monkey(object):
 
     def __init__(self, verbose=False):
+        self.verbose = verbose
+        print "adb forward"
         os.system("adb forward tcp:54784 tcp:54784")
+        print "adb shell monkey"
         os.system("adb shell monkey --port 54784")
+        print "telnet"
         self.sock = telnetlib.Telnet('localhost', 54784)
 
     def send(self, command):
-        if verbose:
+        if self.verbose:
             print command.strip(),
         self.sock.write(command + "\n")
         res = self.sock.read_until('\n').strip()
-        if verbose:
+        if self.verbose:
             print res
 
     def close(self):
@@ -244,3 +253,6 @@ KEYCODE_MAP = _keycode_map()
 ####################################################################
 if __name__ == "__main__": 
     main()
+    ## m = Monkey(verbose=True)
+    ## m.send('type ?')
+    
