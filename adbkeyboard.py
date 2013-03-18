@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import os
 import sys
 from PyQt4.QtCore import * 
@@ -42,8 +43,9 @@ class AndroidKeyboardEdit(QLineEdit):
         keycode = KEYCODE_MAP.get(event.key(), None)
         if keycode is None:
             if 33 <= event.key() <= 255:
-                # try with type
-                self.monkey.send('type %s' % chr(event.key()))
+                if event.type() == QEvent.KeyRelease:
+                    # try with type
+                    self.monkey.send('type %s' % chr(event.key()))
                 return
             else:
                 print 'Unknown key: ', qt_key_name(event.key())
@@ -254,5 +256,9 @@ KEYCODE_MAP = _keycode_map()
 if __name__ == "__main__": 
     main()
     ## m = Monkey(verbose=True)
-    ## m.send('type ?')
-    
+    ## m.send('key down KEYCODE_ALT_LEFT')
+    ## m.send('key down KEYCODE_A')
+    ## m.send('key up KEYCODE_A')
+    ## m.send('key up KEYCODE_ALT_LEFT')
+           
+
